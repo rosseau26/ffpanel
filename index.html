@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<title>Control de Clientes</title>
+<link rel="icon" type="image/jpeg" href="icon.jpg">
+<link rel="apple-touch-icon" href="icon.jpg">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Control de Clientes">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0A0A0A;color:#fff;padding-bottom:88px;min-height:100vh}
+  h1{font-size:28px;font-weight:700;margin:0}
+  .sub{color:#A1A1AA;font-size:13px;margin-top:4px}
+  .label{color:#A1A1AA;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px}
+  .row{display:flex;align-items:center;gap:8px}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:8px}
+  input{width:100%;padding:0 16px;height:56px;border-radius:12px;border:1px solid #27272A;background:#1A1A1A;color:#fff;font-size:16px;outline:none;transition:border .15s}
+  input:focus{border-color:#00E5FF}
+  button{cursor:pointer;border:none;font-family:inherit}
+  .btn{width:100%;height:56px;border-radius:12px;background:#00E5FF;color:#0A0A0A;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+  .btn:active{transform:scale(.98)}
+  .btn-outline{background:transparent;border:1px solid #27272A;color:#fff;height:52px;width:100%;border-radius:12px;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+  .btn-green{background:#25D366;color:#0A0A0A}
+  .btn-icon-round{width:44px;height:44px;border-radius:50%;background:#00E5FF;color:#0A0A0A;display:flex;align-items:center;justify-content:center;border:none;flex-shrink:0}
+  .btn-icon-square{width:44px;height:44px;border-radius:12px;background:#1A1A1A;border:1px solid #27272A;color:#00E5FF;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .header-actions{display:flex;gap:8px;flex-shrink:0}
+  .search-btn{width:56px;height:56px;border-radius:12px;background:#00E5FF;color:#0A0A0A;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .card{background:#1A1A1A;padding:20px;border-radius:16px;margin-top:12px;border:1px solid #27272A}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .promo{background:#1A1A1A;border:1px solid #27272A;padding:16px;border-radius:16px;min-height:84px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;transition:transform .1s;position:relative}
+  .promo:active{transform:scale(.97)}
+  .promo .d{font-size:18px;font-weight:700}
+  .promo .p{font-size:14px;color:#A1A1AA;margin-top:2px}
+  .promo .usd{font-size:11px;color:#71717A;margin-top:2px}
+  .promo.active{background:#00E5FF;border-color:#00E5FF}
+  .promo.active .d,.promo.active .p,.promo.active .usd{color:#0A0A0A}
+  .promo .fire{position:absolute;top:8px;right:10px;font-size:14px}
+  .section{display:none;padding:24px;animation:fade .2s ease}
+  .section.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0A0A0A;border-top:1px solid #27272A;padding:8px 0 12px;z-index:10}
+  .nav .tab{flex:1;background:none;color:#A1A1AA;font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0}
+  .nav .tab.active{color:#00E5FF}
+  .search{display:flex;align-items:center;background:#1A1A1A;border:1px solid #27272A;border-radius:12px;height:48px;padding:0 12px;margin:0 0 12px}
+  .search input{border:none;background:transparent;height:auto;padding:0 0 0 10px;font-size:15px}
+  .client-row{display:flex;align-items:center;gap:12px;background:#1A1A1A;border:1px solid #27272A;border-radius:16px;padding:16px;margin-bottom:8px}
+  .client-row .info{flex:1;min-width:0}
+  .client-row .name{font-weight:700;font-size:16px}
+  .client-row .id{color:#A1A1AA;font-size:13px;margin-top:2px}
+  .badge{display:inline-block;background:#27272A;color:#00E5FF;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;margin-top:8px}
+  .actions{display:flex;gap:8px}
+  .action-btn{width:40px;height:40px;border-radius:12px;background:#27272A;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer}
+  .action-btn.edit{color:#00E5FF}
+  .action-btn.del{color:#FF3B30}
+  .avatar{width:48px;height:48px;border-radius:50%;background:#00E5FF;color:#0A0A0A;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex-shrink:0}
+  .divider{height:1px;background:#27272A;margin:16px 0}
+  .promo-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:16px;font-weight:600;gap:8px}
+  .promo-row.used{text-decoration:line-through}
+  .promo-row .price{color:#A1A1AA;font-size:15px;font-weight:500;text-align:right}
+  .promo-row .price .usd{display:block;font-size:11px;color:#71717A;margin-top:2px}
+  .promo-row.used,.promo-row.used .price{color:#A1A1AA}
+  .hist{display:flex;align-items:center;gap:12px;background:#1A1A1A;border:1px solid #27272A;border-radius:16px;padding:16px;margin-bottom:8px}
+  .hist-icon{width:44px;height:44px;border-radius:12px;background:#27272A;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;color:#00E5FF}
+  .hist .info{flex:1;min-width:0}
+  .hist .name{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hist .meta{color:#A1A1AA;font-size:12px;margin-top:2px}
+  .hist .right{text-align:right;margin-left:auto;flex-shrink:0}
+  .hist .right .amt{color:#00E5FF;font-weight:700;font-size:16px}
+  .hist .right .price{color:#A1A1AA;font-size:12px;margin-top:2px}
+  .empty{text-align:center;padding:60px 20px;color:#A1A1AA}
+  .empty-title{color:#fff;font-weight:600;margin-top:12px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:20}
+  .modal.open{display:flex;animation:fade .15s}
+  .modal-content{width:100%;max-width:500px;background:#0A0A0A;border-top-left-radius:24px;border-top-right-radius:24px;padding:20px 24px 40px;animation:slideUp .25s ease;max-height:90vh;overflow-y:auto}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;position:sticky;top:-20px;background:#0A0A0A;padding-top:20px;margin-top:-20px;z-index:2}
+  .modal-header h3{margin:0;font-size:18px}
+  .close{background:none;border:none;color:#fff;font-size:30px;line-height:1;padding:0;width:36px;height:36px;cursor:pointer}
+  .disabled-input{background:#1A1A1A;border:1px solid #27272A;border-radius:12px;height:56px;display:flex;align-items:center;padding:0 16px;color:#A1A1AA;opacity:.7;font-size:16px}
+  .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#00E5FF;color:#0A0A0A;padding:12px 20px;border-radius:12px;font-weight:600;z-index:30;box-shadow:0 8px 24px rgba(0,229,255,.25);animation:fade .2s;max-width:90%}
+  .setting-card{background:#1A1A1A;border:1px solid #27272A;border-radius:16px;padding:16px;margin-bottom:12px}
+  .setting-card h4{margin:0 0 12px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .price-edit-row{display:grid;grid-template-columns:1fr 110px 130px;gap:8px;align-items:center;margin-bottom:8px}
+  .price-edit-row input{height:44px;font-size:14px;padding:0 10px}
+  .price-edit-row input.pago-url{grid-column:1/-1;font-size:12px;margin-top:2px}
+  .price-edit-row .fire-toggle{height:44px;border-radius:10px;background:#27272A;border:1px solid #3F3F46;color:#A1A1AA;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .price-edit-row .fire-toggle.on{background:#FF3B30;color:#fff;border-color:#FF3B30}
+  .lang-toggle{display:flex;background:#27272A;border-radius:10px;padding:4px;gap:4px}
+  .lang-toggle button{flex:1;height:38px;background:transparent;color:#A1A1AA;border-radius:8px;font-weight:700;font-size:13px}
+  .lang-toggle button.on{background:#00E5FF;color:#0A0A0A}
+  .switch-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
+  .switch-row .lbl{font-size:14px;font-weight:600}
+  .switch-row .desc{font-size:12px;color:#A1A1AA;margin-top:2px}
+  .switch{position:relative;width:48px;height:28px;background:#27272A;border-radius:14px;cursor:pointer;transition:background .2s;flex-shrink:0}
+  .switch.on{background:#00E5FF}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:transform .2s}
+  .switch.on::after{transform:translateX(20px);background:#0A0A0A}
+  .rate-box{background:#0A0A0A;border:1px solid #27272A;border-radius:10px;padding:12px;margin-top:8px;font-size:13px;color:#A1A1AA}
+  .rate-box .val{color:#00E5FF;font-weight:700;font-size:16px}
+  .rate-box .when{font-size:11px;color:#71717A;margin-top:4px}
+  .refresh-btn{background:transparent;border:1px solid #27272A;color:#00E5FF;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-top:8px;display:inline-flex;align-items:center;gap:6px}
+  .section-inner{max-width:600px;margin:0 auto}
+  /* ====== Recargas Regulares ====== */
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .summary-card{background:#1A1A1A;border:1px solid #27272A;border-radius:16px;padding:14px}
+  .summary-card .lbl{color:#A1A1AA;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:6px}
+  .summary-card .val{font-size:18px;font-weight:700;margin-top:6px;word-break:break-word}
+  .summary-card.full{grid-column:1/-1}
+  .summary-card.profit .val{color:#00E5FF}
+  .summary-card.invest .val{color:#FFB020}
+  .summary-card.sales .val{color:#fff}
+  .reg-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .reg-form-grid .full{grid-column:1/-1}
+  .reg-calc{background:#0A0A0A;border:1px dashed #27272A;border-radius:12px;padding:12px 16px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:14px}
+  .reg-calc .lbl{color:#A1A1AA}
+  .reg-calc .val{font-weight:700;font-size:18px;color:#00E5FF}
+  .reg-calc .val.neg{color:#FF3B30}
+</style>
+</head>
+<body>
+
+<div id="tab-recarga" class="section active">
+ <div class="section-inner">
+  <div class="header">
+    <div>
+      <h1 data-i18n="recarga_title">Nueva Recarga</h1>
+      <div class="sub" data-i18n="recarga_sub">Selecciona una o varias promos para el jugador</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon-square" onclick="abrirAjustes()" data-i18n-title="settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="btn-icon-square" onclick="abrirModalNuevo()" data-i18n-title="new_client">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="label" data-i18n="player_id">ID del jugador</div>
+  <input id="idRecarga" placeholder="Ej. 123456789" autocomplete="off">
+  <div class="label" data-i18n="select_promo">Selecciona promoción</div>
+  <div class="grid" id="promoGrid"></div>
+  <button class="btn" onclick="confirmarRecarga()" style="margin-top:24px" id="confirmBtn">Confirmar Recarga</button>
+  <button class="btn-outline" onclick="abrirPagostore()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    <span data-i18n="open_pagostore">Comprar en Pagostore</span>
+  </button>
+ </div>
+</div>
+
+<div id="tab-consultar" class="section">
+ <div class="section-inner">
+  <h1 data-i18n="consult_title">Consultar Cliente</h1>
+  <div class="sub" data-i18n="consult_sub">Revisa promos disponibles y usadas</div>
+  <div class="row" style="margin-top:20px">
+    <input id="buscarId" placeholder="ID del jugador" autocomplete="off" onkeydown="if(event.key==='Enter')buscarCliente()" data-i18n-ph="player_id">
+    <button class="search-btn" onclick="buscarCliente()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </div>
+  <div id="resultado"></div>
+ </div>
+</div>
+
+<div id="tab-clientes" class="section">
+ <div class="section-inner">
+  <div class="header">
+    <div>
+      <h1 data-i18n="clients_title">Clientes</h1>
+      <div class="sub" id="clientCount">0 registrados</div>
+    </div>
+    <button class="btn-icon-round" onclick="abrirModalNuevo()" data-i18n-title="new_client">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+  <button class="btn" onclick="abrirModalNuevo()" style="margin-bottom:16px">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span data-i18n="register_new_client">Registrar nuevo cliente</span>
+  </button>
+  <div class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchClientes" placeholder="Buscar por nombre o ID" oninput="renderClientes()" data-i18n-ph="search_placeholder">
+  </div>
+  <div id="listaClientes"></div>
+ </div>
+</div>
+
+<div id="tab-historial" class="section">
+ <div class="section-inner">
+  <h1 data-i18n="history_title">Historial</h1>
+  <div class="sub" id="histCount">0 recargas registradas</div>
+  <div id="listaHistorial" style="margin-top:20px"></div>
+ </div>
+</div>
+
+<!-- ============ NUEVA SECCIÓN: Costos y ganancias ============ -->
+<div id="tab-regulares" class="section">
+ <div class="section-inner">
+  <h1 data-i18n="reg_title">"Costos y ganancias"</h1>
+  <div class="sub" data-i18n="reg_sub">"Control de costos y ganancias"</div>
+
+  <!-- Resumen de ganancias -->
+  <div class="summary-grid">
+    <div class="summary-card sales">
+      <div class="lbl">💰 <span data-i18n="reg_total_sales">Total vendido</span></div>
+      <div class="val" id="regTotalSales">$0 MXN</div>
+    </div>
+    <div class="summary-card invest">
+      <div class="lbl">💸 <span data-i18n="reg_total_invest">Total invertido</span></div>
+      <div class="val" id="regTotalInvest">$0 MXN</div>
+    </div>
+    <div class="summary-card profit full">
+      <div class="lbl">📈 <span data-i18n="reg_total_profit">Ganancia total</span></div>
+      <div class="val" id="regTotalProfit">$0 MXN</div>
+    </div>
+    <div class="summary-card profit">
+      <div class="lbl">📅 <span data-i18n="reg_profit_day">Ganancia del día</span></div>
+      <div class="val" id="regProfitDay">$0 MXN</div>
+    </div>
+    <div class="summary-card profit">
+      <div class="lbl">🗓️ <span data-i18n="reg_profit_month">Ganancia del mes</span></div>
+      <div class="val" id="regProfitMonth">$0 MXN</div>
+    </div>
+  </div>
+
+  <!-- Formulario de registro -->
+  <div class="setting-card" style="margin-top:20px">
+    <h4>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span data-i18n="reg_form_title">Registrar nueva venta</span>
+    </h4>
+    <div class="reg-form-grid">
+      <div class="full">
+        <div class="label" data-i18n="player_id">ID del jugador</div>
+        <input id="regId" placeholder="Ej. 123456789" autocomplete="off">
+      </div>
+      <div class="full">
+        <div class="label" data-i18n="reg_diamonds">Diamantes</div>
+        <input id="regDiamantes" type="number" inputmode="numeric" placeholder="Ej. 1000" autocomplete="off" oninput="updateRegCalc()">
+      </div>
+      <div>
+        <div class="label" data-i18n="reg_sale_price">Precio venta (MXN)</div>
+        <input id="regPrecio" type="number" inputmode="decimal" placeholder="0.00" autocomplete="off" oninput="updateRegCalc()">
+      </div>
+      <div>
+        <div class="label" data-i18n="reg_cost">Costo (MXN)</div>
+        <input id="regCosto" type="number" inputmode="decimal" placeholder="0.00" autocomplete="off" oninput="updateRegCalc()">
+      </div>
+    </div>
+    <div class="reg-calc">
+      <span class="lbl"><span data-i18n="reg_profit">Ganancia</span>:</span>
+      <span class="val" id="regGananciaCalc">$0.00 MXN</span>
+    </div>
+    <button class="btn" onclick="registrarRegular()" style="margin-top:12px" data-i18n="reg_save">Guardar venta</button>
+  </div>
+
+  <!-- Historial -->
+  <div style="margin-top:24px;display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <h1 style="font-size:20px" data-i18n="reg_history_title">Historial</h1>
+      <div class="sub" id="regHistCount">0 registros</div>
+    </div>
+  </div>
+  <div id="listaRegulares" style="margin-top:12px"></div>
+ </div>
+</div>
+
+<div class="nav">
+  <button class="tab active" onclick="openTab('recarga',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <span data-i18n="nav_recarga">Recarga</span>
+  </button>
+  <button class="tab" onclick="openTab('consultar',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span data-i18n="nav_consultar">Consultar</span>
+  </button>
+    <button class="tab" onclick="openTab('clientes',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span data-i18n="nav_clientes">Clientes</span>
+  </button>
+  <button class="tab" onclick="openTab('historial',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span data-i18n="nav_historial">Historial</span>
+  </button>
+  <button class="tab" onclick="openTab('regulares',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+    <span data-i18n="nav_regulares">Regulares</span>
+  </button>
+</div>
+
+<div class="modal" id="modalNew">
+  <div class="modal-content">
+    <div class="modal-header"><h3 data-i18n="modal_new_client">Nuevo Cliente</h3><button class="close" onclick="cerrarModal('new')">&times;</button></div>
+    <div class="label" data-i18n="player_id">ID del jugador</div>
+    <input id="newId" placeholder="Ej. 123456789" autocomplete="off">
+    <div class="label" data-i18n="name">Nombre</div>
+    <input id="newNombre" placeholder="Nombre del cliente" autocomplete="off" data-i18n-ph="client_name_ph">
+    <button class="btn" onclick="crearCliente()" style="margin-top:24px" data-i18n="save_client">Guardar Cliente</button>
+  </div>
+</div>
+
+<div class="modal" id="modalEdit">
+  <div class="modal-content">
+    <div class="modal-header"><h3 data-i18n="modal_edit_client">Editar Cliente</h3><button class="close" onclick="cerrarModal('edit')">&times;</button></div>
+    <div class="label" data-i18n="player_id">ID del jugador</div>
+    <div class="disabled-input" id="editIdDisplay"></div>
+    <div class="label" data-i18n="name">Nombre</div>
+    <input id="editNombre" placeholder="Nombre del cliente" autocomplete="off" data-i18n-ph="client_name_ph">
+    <button class="btn" onclick="guardarEdicion()" style="margin-top:24px" data-i18n="save_changes">Guardar Cambios</button>
+  </div>
+</div>
+
+<div class="modal" id="modalSettings">
+  <div class="modal-content">
+    <div class="modal-header"><h3 data-i18n="settings">Ajustes</h3><button class="close" onclick="cerrarModal('settings')">&times;</button></div>
+    <div class="setting-card">
+      <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg><span data-i18n="language">Idioma</span></h4>
+      <div class="lang-toggle">
+        <button id="langEs" onclick="setLang('es')">Español</button>
+        <button id="langEn" onclick="setLang('en')">English</button>
+      </div>
+    </div>
+    <div class="setting-card">
+      <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span data-i18n="exchange_rate">Tipo de cambio</span></h4>
+      <div class="switch-row">
+        <div>
+          <div class="lbl" data-i18n="show_usd">Mostrar precios en USD</div>
+          <div class="desc" data-i18n="show_usd_desc">Conversión automática MXN → USD</div>
+        </div>
+        <div class="switch" id="usdSwitch" onclick="toggleUsd()"></div>
+      </div>
+      <div class="rate-box">
+        <div><span data-i18n="current_rate">Tasa actual</span>: <span class="val" id="rateValue">—</span></div>
+        <div class="when" id="rateWhen"></div>
+        <button class="refresh-btn" onclick="refreshRate()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          <span data-i18n="refresh">Actualizar</span>
+        </button>
+      </div>
+    </div>
+    <div class="setting-card">
+      <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span data-i18n="prices">Precios de diamantes</span></h4>
+      <div class="desc" style="color:#A1A1AA;font-size:12px;margin-bottom:12px" data-i18n="prices_desc">Edita los precios y el enlace directo de Pagostore por cada promo. Toca 🔥 para marcarlo como oferta.</div>
+      <div id="priceEditor"></div>
+      <button class="btn" onclick="guardarPrecios()" style="margin-top:16px" data-i18n="save_prices">Guardar precios</button>
+      <button class="btn-outline" onclick="restablecerPrecios()" data-i18n="reset_defaults">Restablecer valores por defecto</button>
+    </div>
+    <div class="setting-card">
+      <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span data-i18n="pagostore_base">URL base Pagostore</span></h4>
+      <div class="desc" style="color:#A1A1AA;font-size:12px;margin-bottom:8px" data-i18n="pagostore_base_desc">URL que se abrirá desde el botón "Comprar en Pagostore". Los enlaces por promo se configuran arriba.</div>
+      <input id="pagostoreBase" placeholder="https://pagostore.com">
+      <button class="btn-outline" onclick="guardarPagostoreBase()" style="margin-top:8px" data-i18n="save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_PROMOS=[{d:110,p:16,fire:false},{d:341,p:45,fire:false},{d:572,p:80,fire:false},{d:1116,p:155,fire:false},{d:2398,p:280,fire:true},{d:6168,p:650,fire:true}];
+const DEFAULT_SETTINGS={lang:'es',showUsd:false,usdRate:null,usdFetchedAt:null,promos:DEFAULT_PROMOS.map(p=>({...p,pagoUrl:""})),pagostoreBase:"https://pagostore.com"};
+
+const I18N={
+  es:{recarga_title:"Nueva Recarga",recarga_sub:"Selecciona una o varias promos para el jugador",player_id:"ID del jugador",select_promo:"Selecciona promoción",confirm_recarga:"Confirmar Recarga",open_pagostore:"Comprar en Pagostore",consult_title:"Consultar Cliente",consult_sub:"Revisa promos disponibles y usadas",clients_title:"Clientes",history_title:"Historial",register_new_client:"Registrar nuevo cliente",nav_recarga:"Recarga",nav_consultar:"Consultar",nav_clientes:"Clientes",nav_historial:"Historial",nav_regulares:"Ganancia",modal_new_client:"Nuevo Cliente",modal_edit_client:"Editar Cliente",name:"Nombre",save_client:"Guardar Cliente",save_changes:"Guardar Cambios",settings:"Ajustes",new_client:"Nuevo cliente",language:"Idioma",prices:"Precios de diamantes",prices_desc:"Edita los precios y el enlace directo de Pagostore por cada promo. Toca 🔥 para marcarlo como oferta.",save_prices:"Guardar precios",reset_defaults:"Restablecer valores por defecto",exchange_rate:"Tipo de cambio",show_usd:"Mostrar precios en USD",show_usd_desc:"Conversión automática MXN → USD",current_rate:"Tasa actual",refresh:"Actualizar",pagostore_base:"URL base Pagostore",pagostore_base_desc:'URL que se abrirá desde el botón "Comprar en Pagostore". Los enlaces por promo se configuran arriba.',save:"Guardar",search_placeholder:"Buscar por nombre o ID",client_name_ph:"Nombre del cliente",copy_whats:"Copiar mensaje WhatsApp",reset_promos:"Resetear promos usadas",available:"disponibles",registered:"registrados",recharges:"recargas registradas",no_clients:"Sin clientes aún",no_results:"Sin resultados",tap_register:'Toca "Registrar nuevo cliente"',try_other:"Prueba otro término",not_found:"Cliente no encontrado",deleted:"Cliente eliminado",saved_ok:"Cliente guardado ✓",updated_ok:"Cliente actualizado ✓",recarga_ok:"Recarga registrada ✓",msg_copied:"Mensaje copiado al portapapeles",err_enter_id:"Ingresa el ID del jugador",err_select_promo:"Selecciona una promoción",err_no_client:"Cliente no existe. Regístralo primero con el botón de la esquina superior.",err_both_fields:"Completa ID y Nombre",err_dup_id:"Ya existe un cliente con ese ID",err_name_empty:"El nombre no puede estar vacío",confirm_delete:"¿Eliminar a {n}? Se borrará también su historial.",confirm_reset_promos:"¿Resetear todas las promos usadas de {n}?",promos_reset:"Promos reseteadas",rate_updated:"Tasa actualizada",rate_error:"No se pudo obtener la tasa",updated_at:"Actualizado",no_history:"Sin recargas aún",whats_greet:"Hola {n} 👋",whats_intro:"Promociones de diamantes disponibles:",whats_used_intro:"Ya usaste estas promos:",whats_footer:" ",prices_saved:"Precios actualizados",base_saved:"URL base guardada",reset_done:"Precios restablecidos",reg_title:"Costos y ganancias",reg_sub:"Control de costos y ganancias",reg_total_sales:"Total vendido",reg_total_invest:"Total invertido",reg_total_profit:"Ganancia total",reg_profit_day:"Ganancia del día",reg_profit_month:"Ganancia del mes",reg_form_title:"Registrar nueva venta",reg_diamonds:"Diamantes",reg_sale_price:"Precio venta (MXN)",reg_cost:"Costo (MXN)",reg_profit:"Ganancia",reg_save:"Guardar venta",reg_history_title:"Historial",reg_records:"registros",reg_no_history:"Sin ventas registradas aún",reg_err_fields:"Completa todos los campos correctamente",reg_err_diamonds:"Ingresa una cantidad válida de diamantes",reg_err_price:"Ingresa un precio de venta válido",reg_err_cost:"Ingresa un costo válido",reg_saved:"Venta registrada ✓",reg_confirm_delete:"¿Eliminar este registro? Esta acción no se puede deshacer.",reg_deleted:"Registro eliminado"},
+  en:{recarga_title:"New Recharge",recarga_sub:"Select one or more promos for the player",player_id:"Player ID",select_promo:"Select promotion",confirm_recarga:"Confirm Recharge",open_pagostore:"Buy on Pagostore",consult_title:"Check Client",consult_sub:"Review available and used promos",clients_title:"Clients",history_title:"History",register_new_client:"Register new client",nav_recarga:"Recharge",nav_consultar:"Check",nav_clientes:"Clients",nav_historial:"History",nav_regulares:"Regular",modal_new_client:"New Client",modal_edit_client:"Edit Client",name:"Name",save_client:"Save Client",save_changes:"Save Changes",settings:"Settings",new_client:"New client",language:"Language",prices:"Diamond prices",prices_desc:"Edit prices and the direct Pagostore link per promo. Tap 🔥 to mark it as a deal.",save_prices:"Save prices",reset_defaults:"Reset to defaults",exchange_rate:"Exchange rate",show_usd:"Show prices in USD",show_usd_desc:"Automatic MXN → USD conversion",current_rate:"Current rate",refresh:"Refresh",pagostore_base:"Pagostore base URL",pagostore_base_desc:'URL that opens from the "Buy on Pagostore" button. Per-promo links are configured above.',save:"Save",search_placeholder:"Search by name or ID",client_name_ph:"Client name",copy_whats:"Copy WhatsApp message",reset_promos:"Reset used promos",available:"available",registered:"registered",recharges:"recharges registered",no_clients:"No clients yet",no_results:"No results",tap_register:'Tap "Register new client"',try_other:"Try another term",not_found:"Client not found",deleted:"Client deleted",saved_ok:"Client saved ✓",updated_ok:"Client updated ✓",recarga_ok:"Recharge registered ✓",msg_copied:"Message copied to clipboard",err_enter_id:"Enter the player ID",err_select_promo:"Select a promotion",err_no_client:"Client doesn't exist. Register them first using the top-right button.",err_both_fields:"Fill in ID and Name",err_dup_id:"A client with that ID already exists",err_name_empty:"Name cannot be empty",confirm_delete:"Delete {n}? Their history will also be removed.",confirm_reset_promos: "Reset all used promos for {n}?",
+promos_reset: "Promos reset",
+rate_updated: "Rate updated",
+rate_error: "Couldn't fetch rate",
+updated_at: "Updated",
+no_history: "No recharges yet",
+whats_greet: "Hi {n} 👋",
+whats_intro: "Available diamond promos:",
+whats_used_intro: "Promos already used:",
+whats_footer: "",
+prices_updated: "Prices updated",
+base_saved: "Base URL saved",
+reset_done: "Prices reset",
+reg_title: "Costs & profits",
+reg_sub: "Manual sales tracking with cost and profit",reg_total_sales:"Total sold",reg_total_invest:"Total invested",reg_total_profit:"Total profit",reg_profit_day:"Today's profit",reg_profit_month:"Monthly profit",reg_form_title:"Register new sale",reg_diamonds:"Diamonds",reg_sale_price:"Sale price (MXN)",reg_cost:"Cost (MXN)",reg_profit:"Profit",reg_save:"Save sale",reg_history_title:"History",reg_records:"records",reg_no_history:"No sales registered yet",reg_err_fields:"Fill in all fields correctly",reg_err_diamonds:"Enter a valid amount of diamonds",reg_err_price:"Enter a valid sale price",reg_err_cost:"Enter a valid cost",reg_saved:"Sale registered ✓",reg_confirm_delete:"Delete this record? This action cannot be undone.",reg_deleted:"Record deleted"}
+};
+function t(key,vars){let s=(I18N[settings.lang]||I18N.es)[key]||key;if(vars)Object.keys(vars).forEach(k=>s=s.replace("{"+k+"}",vars[k]));return s}
+
+let db=JSON.parse(localStorage.getItem("clientes")||"{}");
+let recargas=JSON.parse(localStorage.getItem("recargas")||"[]");
+let recargasRegulares=JSON.parse(localStorage.getItem("recargasRegulares")||"[]");
+let settings=loadSettings();
+let selectedPromos=[];
+let editingId=null;
+let consultingId=null;
+
+function loadSettings(){const raw=localStorage.getItem("settings");if(!raw)return{...DEFAULT_SETTINGS,promos:DEFAULT_SETTINGS.promos.map(p=>({...p}))};try{const s=JSON.parse(raw);return{...DEFAULT_SETTINGS,...s,promos:(s.promos&&s.promos.length)?s.promos:DEFAULT_SETTINGS.promos.map(p=>({...p}))}}catch(e){return{...DEFAULT_SETTINGS,promos:DEFAULT_SETTINGS.promos.map(p=>({...p}))}}}
+function save(){localStorage.setItem("clientes",JSON.stringify(db));localStorage.setItem("recargas",JSON.stringify(recargas));localStorage.setItem("recargasRegulares",JSON.stringify(recargasRegulares))}
+function saveSettings(){localStorage.setItem("settings",JSON.stringify(settings))}
+function toast(msg){const old=document.querySelector(".toast");if(old)old.remove();const el=document.createElement("div");el.className="toast";el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),1800)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmtNum(n){return Number(n).toLocaleString('en-US')}
+function fmtMoney(n){return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function toUsd(mxn){if(!settings.showUsd||!settings.usdRate)return null;return(mxn/settings.usdRate).toFixed(2)}
+
+function openTab(tab,el){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.getElementById("tab-"+tab).classList.add("active");document.querySelectorAll(".nav .tab").forEach(b=>b.classList.remove("active"));el.classList.add("active");if(tab==="clientes")renderClientes();if(tab==="historial")renderHistorial();if(tab==="recarga")renderPromos();if(tab==="regulares")renderRegulares()}
+
+function abrirModalNuevo(){document.getElementById("newId").value="";document.getElementById("newNombre").value="";document.getElementById("modalNew").classList.add("open");setTimeout(()=>document.getElementById("newId").focus(),100)}
+function abrirModalEditar(id){editingId=id;document.getElementById("editIdDisplay").textContent=id;document.getElementById("editNombre").value=db[id].nombre;document.getElementById("modalEdit").classList.add("open");setTimeout(()=>document.getElementById("editNombre").focus(),100)}
+function abrirAjustes(){renderPriceEditor();document.getElementById("pagostoreBase").value=settings.pagostoreBase||"";document.getElementById("modalSettings").classList.add("open");updateLangButtons();updateUsdSwitch();updateRateBox()}
+function cerrarModal(k){const id={new:"modalNew",edit:"modalEdit",settings:"modalSettings"}[k];document.getElementById(id).classList.remove("open")}
+
+function renderPromos(){const grid=document.getElementById("promoGrid");grid.innerHTML=settings.promos.map(x=>{const u=toUsd(x.p);return`<div class="promo" data-d="${x.d}" onclick="selectPromo(${x.d},this)">${x.fire?'<span class="fire">🔥</span>':''}<div class="d">💎 ${fmtNum(x.d)}</div><div class="p">$${fmtNum(x.p)} MXN</div>${u?`<div class="usd">≈ $${u} USD</div>`:''}</div>`}).join("");selectedPromos=selectedPromos.filter(d=>settings.promos.some(p=>p.d===d));selectedPromos.forEach(d=>{const el=grid.querySelector(`[data-d="${d}"]`);if(el)el.classList.add("active")});updateConfirmTotal()}
+function selectPromo(v,el){const idx=selectedPromos.indexOf(v);if(idx>=0){selectedPromos.splice(idx,1);el.classList.remove("active")}else{selectedPromos.push(v);el.classList.add("active")}updateConfirmTotal()}
+function updateConfirmTotal(){const btn=document.getElementById("confirmBtn");if(!btn)return;if(selectedPromos.length===0){btn.textContent=t("confirm_recarga");return}const totalDiams=selectedPromos.reduce((a,d)=>a+d,0);const totalMxn=selectedPromos.reduce((a,d)=>{const p=settings.promos.find(x=>x.d===d);return a+(p?p.p:0)},0);const u=toUsd(totalMxn);btn.textContent=`${t("confirm_recarga")} · ${selectedPromos.length} × 💎${fmtNum(totalDiams)} · $${fmtNum(totalMxn)} MXN${u?` (~$${u} USD)`:""}`}
+function confirmarRecarga(){const id=document.getElementById("idRecarga").value.trim();if(!id)return alert(t("err_enter_id"));if(selectedPromos.length===0)return alert(t("err_select_promo"));if(!db[id])return alert(t("err_no_client"));const now=Date.now();selectedPromos.forEach((d,idx)=>{if(!db[id].usadas.includes(String(d)))db[id].usadas.push(String(d));const promo=settings.promos.find(p=>p.d===d);recargas.push({id:now+"_"+idx+"_"+Math.random().toString(36).slice(2,6),player_id:id,nombre:db[id].nombre,promo:d,price:promo?promo.p:null,timestamp:now+idx})});save();toast(t("recarga_ok"));document.getElementById("idRecarga").value="";selectedPromos=[];document.querySelectorAll(".promo").forEach(p=>p.classList.remove("active"));updateConfirmTotal()}
+function abrirPagostore(){const id=document.getElementById("idRecarga").value.trim();let url=settings.pagostoreBase||"https://pagostore.com";if(selectedPromos.length===1){const promo=settings.promos.find(p=>p.d===selectedPromos[0]);if(promo&&promo.pagoUrl)url=promo.pagoUrl}if(id){const sep=url.includes("?")?"&":"?";url=url+sep+"player_id="+encodeURIComponent(id);if(navigator.clipboard)navigator.clipboard.writeText(id).catch(()=>{})}window.open(url,"_blank","noopener")}
+
+function crearCliente(){const id=document.getElementById("newId").value.trim();const nombre=document.getElementById("newNombre").value.trim();if(!id||!nombre)return alert(t("err_both_fields"));if(db[id])return alert(t("err_dup_id"));db[id]={nombre,usadas:[],created_at:Date.now()};save();cerrarModal("new");toast(t("saved_ok"));renderClientes()}
+function guardarEdicion(){const nombre=document.getElementById("editNombre").value.trim();if(!nombre)return alert(t("err_name_empty"));db[editingId].nombre=nombre;recargas.forEach(r=>{if(r.player_id===editingId)r.nombre=nombre});recargasRegulares.forEach(r=>{if(r.player_id===editingId)r.nombre=nombre});save();cerrarModal("edit");toast(t("updated_ok"));renderClientes();if(consultingId===editingId)buscarCliente()}
+function borrarCliente(id){if(!confirm(t("confirm_delete",{n:db[id].nombre})))return;delete db[id];recargas=recargas.filter(r=>r.player_id!==id);save();toast(t("deleted"));renderClientes()}
+function renderClientes(){const q=(document.getElementById("searchClientes")?.value||"").trim().toLowerCase();const ids=Object.keys(db).sort((a,b)=>(db[b].created_at||0)-(db[a].created_at||0));document.getElementById("clientCount").textContent=ids.length+" "+t("registered");const filtered=ids.filter(id=>!q||id.toLowerCase().includes(q)||db[id].nombre.toLowerCase().includes(q));const list=document.getElementById("listaClientes");if(filtered.length===0){list.innerHTML=`<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div class="empty-title">${ids.length===0?t("no_clients"):t("no_results")}</div><div style="font-size:13px;margin-top:4px">${ids.length===0?t("tap_register"):t("try_other")}</div></div>`;return}list.innerHTML=filtered.map(id=>{const c=db[id];const remaining=settings.promos.length-c.usadas.length;const safeId=esc(id);return`<div class="client-row"><div class="info"><div class="name">${esc(c.nombre)}</div><div class="id">ID: ${safeId}</div><div class="badge">${remaining}/${settings.promos.length} ${t("available")}</div></div><div class="actions"><button class="action-btn edit" onclick="abrirModalEditar('${safeId}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button><button class="action-btn del" onclick="borrarCliente('${safeId}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div></div>`}).join("")}
+
+function buscarCliente(){const id=document.getElementById("buscarId").value.trim();const out=document.getElementById("resultado");if(!id){out.innerHTML="";consultingId=null;return}const c=db[id];if(!c){out.innerHTML=`<div class="card" style="text-align:center;color:#A1A1AA">${t("not_found")}</div>`;consultingId=null;return}consultingId=id;const safeId=esc(id);const rows=settings.promos.map(x=>{const used=c.usadas.includes(String(x.d));const u=toUsd(x.p);return`<div class="promo-row ${used?'used':''}"><span>${x.fire?'🔥 ':'🔹 '}${fmtNum(x.d)} 💎</span><span class="price">$${fmtNum(x.p)} MXN${u?`<span class="usd">≈ $${u} USD</span>`:''}</span></div>`}).join("");out.innerHTML=`<div class="card"><div class="row" style="gap:16px"><div class="avatar">${esc(c.nombre.charAt(0).toUpperCase())}</div><div style="flex:1;min-width:0"><div style="font-size:18px;font-weight:700">${esc(c.nombre)}</div><div style="color:#A1A1AA;font-size:13px;margin-top:2px">ID: ${safeId}</div></div></div><div class="divider"></div>${rows}<button class="btn btn-green" onclick="copiarWhats('${safeId}')" style="margin-top:16px"><svg width="18" height="18" viewBox="0 0 24 24" fill="#0A0A0A" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.58-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.005 0C5.373 0 .013 5.374.013 12c0 2.12.555 4.191 1.607 6.005L0 24l6.158-1.614A11.966 11.966 0 0 0 12 24c6.625 0 11.988-5.374 11.988-12S18.625 0 12.005 0z"/></svg>${t("copy_whats")}</button><button class="btn-outline" onclick="abrirPagostoreId('${safeId}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${t("open_pagostore")}</button><button class="btn-outline" onclick="resetPromos('${safeId}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>${t("reset_promos")}</button></div>`}
+function abrirPagostoreId(id){const url=settings.pagostoreBase||"https://pagostore.com";if(navigator.clipboard)navigator.clipboard.writeText(id).catch(()=>{});window.open(url+(url.includes("?")?"&":"?")+"player_id="+encodeURIComponent(id),"_blank","noopener")}
+function resetPromos(id){if(!db[id])return;if(!confirm(t("confirm_reset_promos",{n:db[id].nombre})))return;db[id].usadas=[];save();toast(t("promos_reset"));buscarCliente()}
+function copiarWhats(id){const c=db[id];if(!c)return;const lines=[];lines.push("*"+t("whats_greet",{n:c.nombre})+"*");lines.push("ID: "+id);lines.push("");const available=settings.promos.filter(p=>!c.usadas.includes(String(p.d)));const used=settings.promos.filter(p=>c.usadas.includes(String(p.d)));if(available.length){lines.push(t("whats_intro"));available.forEach(x=>{const u=toUsd(x.p);lines.push(`*🔹 ${fmtNum(x.d)} 💎 → $${fmtNum(x.p)} MXN${u?` (~$${u} USD)`:""}${x.fire?" 🔥":""}*`)});lines.push("")}if(used.length){lines.push(t("whats_used_intro"));used.forEach(x=>lines.push(`~🔹 ${fmtNum(x.d)} 💎 → $${fmtNum(x.p)} MXN~`));lines.push("")}lines.push(t("whats_footer"));copyText(lines.join("\n")).then(()=>toast(t("msg_copied")))}
+function copyText(txt){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(txt);return new Promise(res=>{const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(ta);res()})}
+
+function renderHistorial(){const list=document.getElementById("listaHistorial");const ordered=[...recargas].sort((a,b)=>b.timestamp-a.timestamp);document.getElementById("histCount").textContent=ordered.length+" "+t("recharges");if(ordered.length===0){list.innerHTML=`<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div class="empty-title">${t("no_history")}</div></div>`;return}list.innerHTML=ordered.map(r=>{const d=new Date(r.timestamp);const fecha=d.toLocaleString(settings.lang==='en'?'en-US':'es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});const price=r.price!=null?r.price:(settings.promos.find(p=>p.d===r.promo)?.p);const u=price!=null?toUsd(price):null;return`<div class="hist"><div class="hist-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="info"><div class="name">${esc(r.nombre)}</div><div class="meta">ID: ${esc(r.player_id)} · ${fecha}</div></div><div class="right"><div class="amt">💎 ${fmtNum(r.promo)}</div><div class="price">${price!=null?`$${fmtNum(price)} MXN`:''}${u?` · $${u} USD`:''}</div></div></div>`}).join("")}
+
+/* ============ RECARGAS REGULARES ============ */
+function updateRegCalc(){
+  const precio=parseFloat(document.getElementById("regPrecio").value)||0;
+  const costo=parseFloat(document.getElementById("regCosto").value)||0;
+  const ganancia=precio-costo;
+  const el=document.getElementById("regGananciaCalc");
+  el.textContent=`$${fmtMoney(ganancia)} MXN`;
+  el.classList.toggle("neg",ganancia<0);
+}
+function registrarRegular(){
+  const id=document.getElementById("regId").value.trim();
+  const diamantes=parseInt(document.getElementById("regDiamantes").value,10);
+  const precioVenta=parseFloat(document.getElementById("regPrecio").value);
+  const costo=parseFloat(document.getElementById("regCosto").value);
+  if(!id)return alert(t("err_enter_id"));
+  if(!db[id])return alert(t("err_no_client"));
+  if(!Number.isFinite(diamantes)||diamantes<=0)return alert(t("reg_err_diamonds"));
+  if(!Number.isFinite(precioVenta)||precioVenta<0)return alert(t("reg_err_price"));
+  if(!Number.isFinite(costo)||costo<0)return alert(t("reg_err_cost"));
+  const ganancia=precioVenta-costo;
+  const now=Date.now();
+  recargasRegulares.push({
+    id:now+"_"+Math.random().toString(36).slice(2,8),
+    player_id:id,
+    nombre:db[id].nombre,
+    diamantes:diamantes,
+    precioVenta:precioVenta,
+    costo:costo,
+    ganancia:ganancia,
+    timestamp:now
+  });
+  save();
+  toast(t("reg_saved"));
+  document.getElementById("regId").value="";
+  document.getElementById("regDiamantes").value="";
+  document.getElementById("regPrecio").value="";
+  document.getElementById("regCosto").value="";
+  updateRegCalc();
+  renderRegulares();
+}
+function eliminarRegular(rid){
+  if(!confirm(t("reg_confirm_delete")))return;
+  recargasRegulares=recargasRegulares.filter(r=>r.id!==rid);
+  save();
+  toast(t("reg_deleted"));
+  renderRegulares();
+}
+function renderRegulares(){
+  const ordered=[...recargasRegulares].sort((a,b)=>b.timestamp-a.timestamp);
+  // Resumen
+  const totalSales=ordered.reduce((a,r)=>a+(Number(r.precioVenta)||0),0);
+  const totalInvest=ordered.reduce((a,r)=>a+(Number(r.costo)||0),0);
+  const totalProfit=ordered.reduce((a,r)=>a+(Number(r.ganancia)||0),0);
+  const now=new Date();
+  const startOfDay=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  const startOfMonth=new Date(now.getFullYear(),now.getMonth(),1).getTime();
+  const profitDay=ordered.filter(r=>r.timestamp>=startOfDay).reduce((a,r)=>a+(Number(r.ganancia)||0),0);
+  const profitMonth=ordered.filter(r=>r.timestamp>=startOfMonth).reduce((a,r)=>a+(Number(r.ganancia)||0),0);
+  document.getElementById("regTotalSales").textContent=`$${fmtMoney(totalSales)} MXN`;
+  document.getElementById("regTotalInvest").textContent=`$${fmtMoney(totalInvest)} MXN`;
+  document.getElementById("regTotalProfit").textContent=`$${fmtMoney(totalProfit)} MXN`;
+  document.getElementById("regProfitDay").textContent=`$${fmtMoney(profitDay)} MXN`;
+  document.getElementById("regProfitMonth").textContent=`$${fmtMoney(profitMonth)} MXN`;
+  // Lista
+  document.getElementById("regHistCount").textContent=ordered.length+" "+t("reg_records");
+  const list=document.getElementById("listaRegulares");
+  if(ordered.length===0){
+    list.innerHTML=`<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg><div class="empty-title">${t("reg_no_history")}</div></div>`;
+    return;
+  }
+  list.innerHTML=ordered.map(r=>{
+    const d=new Date(r.timestamp);
+    const fecha=d.toLocaleString(settings.lang==='en'?'en-US':'es-MX',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const profitColor=Number(r.ganancia)>=0?'#00E5FF':'#FF3B30';
+    const safeRid=esc(r.id);
+    return `<div class="hist"><div class="hist-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div><div class="info"><div class="name">${esc(r.nombre||'')}</div><div class="meta">ID: ${esc(r.player_id)} · ${fecha}</div><div class="meta" style="margin-top:4px">💎 ${fmtNum(r.diamantes)} · 💵 $${fmtMoney(r.precioVenta)} · 💸 $${fmtMoney(r.costo)}</div></div><div class="right"><div class="amt" style="color:${profitColor}">$${fmtMoney(r.ganancia)}</div><button class="action-btn del" onclick="eliminarRegular('${safeRid}')" style="margin-top:6px;width:36px;height:36px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div></div>`;
+  }).join("");
+}
+
+function setLang(lang){settings.lang=lang;saveSettings();applyLang();updateLangButtons();renderPromos();renderClientes();renderHistorial();renderRegulares();if(consultingId)buscarCliente();renderPriceEditor();updateRateBox()}
+function updateLangButtons(){document.getElementById("langEs").classList.toggle("on",settings.lang==="es");document.getElementById("langEn").classList.toggle("on",settings.lang==="en")}
+function applyLang(){document.documentElement.lang=settings.lang;document.title=settings.lang==="en"?"Client Manager":"Control de Clientes";document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.getAttribute("data-i18n"))});document.querySelectorAll("[data-i18n-ph]").forEach(el=>{el.setAttribute("placeholder",t(el.getAttribute("data-i18n-ph")))});document.querySelectorAll("[data-i18n-title]").forEach(el=>{el.setAttribute("title",t(el.getAttribute("data-i18n-title")))});updateConfirmTotal()}
+
+function updateUsdSwitch(){document.getElementById("usdSwitch").classList.toggle("on",!!settings.showUsd)}
+function toggleUsd(){settings.showUsd=!settings.showUsd;saveSettings();updateUsdSwitch();if(settings.showUsd&&!settings.usdRate){refreshRate();return}renderPromos();renderClientes();renderHistorial();if(consultingId)buscarCliente()}
+function updateRateBox(){const v=document.getElementById("rateValue");const w=document.getElementById("rateWhen");if(settings.usdRate){v.textContent=`1 USD = ${Number(settings.usdRate).toFixed(4)} MXN`;if(settings.usdFetchedAt){const d=new Date(settings.usdFetchedAt);w.textContent=t("updated_at")+": "+d.toLocaleString(settings.lang==="en"?"en-US":"es-MX")}else w.textContent=""}else{v.textContent="—";w.textContent=""}}
+async function refreshRate(){try{const r=await fetch("https://open.er-api.com/v6/latest/USD");const j=await r.json();const mxn=j&&j.rates&&j.rates.MXN;if(!mxn)throw new Error("no rate");settings.usdRate=mxn;settings.usdFetchedAt=Date.now();saveSettings();updateRateBox();toast(t("rate_updated"));renderPromos();renderClientes();renderHistorial();if(consultingId)buscarCliente()}catch(e){toast(t("rate_error"))}}
+
+function renderPriceEditor(){const el=document.getElementById("priceEditor");el.innerHTML=settings.promos.map((p,i)=>`<div class="price-edit-row"><input type="number" value="${p.d}" data-field="d" data-i="${i}" placeholder="💎"><input type="number" value="${p.p}" data-field="p" data-i="${i}" placeholder="MXN"><button class="fire-toggle ${p.fire?'on':''}" onclick="toggleFire(${i})">🔥</button><input type="url" class="pago-url" value="${esc(p.pagoUrl||'')}" data-field="pagoUrl" data-i="${i}" placeholder="Pagostore URL (opcional)"></div>`).join("")}
+function toggleFire(i){settings.promos[i].fire=!settings.promos[i].fire;renderPriceEditor()}
+function guardarPrecios(){document.querySelectorAll("#priceEditor .price-edit-row").forEach(row=>{row.querySelectorAll("input").forEach(inp=>{const f=inp.getAttribute("data-field");const i=+inp.getAttribute("data-i");if(f==="pagoUrl")settings.promos[i].pagoUrl=inp.value.trim();else settings.promos[i][f]=Number(inp.value)||0})});settings.promos.sort((a,b)=>a.d-b.d);saveSettings();renderPromos();if(consultingId)buscarCliente();toast(t("prices_saved"))}
+function restablecerPrecios(){settings.promos=DEFAULT_PROMOS.map(p=>({...p,pagoUrl:""}));saveSettings();renderPriceEditor();renderPromos();if(consultingId)buscarCliente();toast(t("reset_done"))}
+function guardarPagostoreBase(){settings.pagostoreBase=document.getElementById("pagostoreBase").value.trim()||"https://pagostore.com";saveSettings();toast(t("base_saved"))}
+
+applyLang();
+renderPromos();
+renderClientes();
+renderRegulares();
+updateUsdSwitch();
+updateRateBox();
+if(settings.showUsd||!settings.usdRate||(settings.usdFetchedAt&&Date.now()-settings.usdFetchedAt>43200000)){refreshRate()}
+</script>
+</body>
+</html>
